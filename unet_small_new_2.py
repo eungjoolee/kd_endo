@@ -201,7 +201,7 @@ def train_model(total_epochs, save_dir,train_images,train_labels,val_images,val_
             
  
             if tbEpoch%60==0:
-                s_unet.save_weights(save_dir + "model_unet3D_distillation_test_%s.h5"%tbEpoch)
+                model.save_weights(save_dir + "model_unet3D_distillation_test_%s.h5"%tbEpoch)
 
 
             if val_loss<min_val_loss:
@@ -210,7 +210,7 @@ def train_model(total_epochs, save_dir,train_images,train_labels,val_images,val_
 
             del(history)
             gc.collect()
-#         s_unet.save_weights(save_dir + "model_unet3D_distillation_new_test_%s.h5"%_suffix)
+#         model.save_weights(save_dir + "model_unet3D_distillation_new_test_%s.h5"%_suffix)
 
                 
 
