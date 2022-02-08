@@ -508,9 +508,14 @@ class SwinTransformerBlock(tf.keras.layers.Layer):
         
         # <---!!!
         # Handling too-small patch numbers
-        if min(self.num_patch) < self.window_size:
-            self.shift_size = 0
-            self.window_size = min(self.num_patch)
+        try:
+            if min(self.num_patch) < self.window_size:
+                self.shift_size = 0
+                self.window_size = min(self.num_patch)
+        except TypeError:
+            if self.num_patch < self.window_size:
+                self.shift_size = 0
+                self.window_size = min(self.num_patch)
     
     def get_config(self):
         config = super().get_config().copy()

@@ -1,6 +1,8 @@
 
 from __future__ import absolute_import
-
+import sys
+sys.path.append('D:/code/VIT/clean_code/')
+import tensorflow as tf
 from keras_unet_collection.layer_utils import *
 from keras_unet_collection.transformer_layers import patch_extract, patch_embedding, SwinTransformerBlock, patch_merging, patch_expanding
 
@@ -103,14 +105,23 @@ def swin_unet_2d_base(input_tensor, filter_num_begin, depth, stack_num_down, sta
     X = input_tensor
     
     # Patch extraction
+    # print(patch_size)
     X = patch_extract(patch_size)(X)
+    
+    _num_patch = X.shape[1]
 
     # Embed patches to tokens
+    X = tf.expand_dims(X, axis=-1)
+    X = tf.keras.layers.ZeroPadding2D(padding=((num_patch_x*num_patch_y-_num_patch, 0), (0, 0)))(X)
+    X = tf.squeeze(X, axis=-1)
+
+
     X = patch_embedding(num_patch_x*num_patch_y, embed_dim)(X)
+    # X = patch_embedding(_num_patch, embed_dim)(X)
     
     # The first Swin Transformer stack
     X = swin_transformer_stack(X, stack_num=stack_num_down, 
-                               embed_dim=embed_dim, num_patch=(num_patch_x, num_patch_y), 
+                               embed_dim=embed_dim, num_patch=(num_patch_x, num_patch_y),
                                num_heads=num_heads[0], window_size=window_size[0], num_mlp=num_mlp, 
                                shift_window=shift_window, name='{}_swin_down0'.format(name))
     X_skip.append(X)
@@ -128,7 +139,7 @@ def swin_unet_2d_base(input_tensor, filter_num_begin, depth, stack_num_down, sta
         
         # Swin Transformer stacks
         X = swin_transformer_stack(X, stack_num=stack_num_down, 
-                                   embed_dim=embed_dim, num_patch=(num_patch_x, num_patch_y), 
+                                   embed_dim=embed_dim, num_patch=(num_patch_x, num_patch_y),
                                    num_heads=num_heads[i+1], window_size=window_size[i+1], num_mlp=num_mlp, 
                                    shift_window=shift_window, name='{}_swin_down{}'.format(name, i+1))
         
@@ -237,3 +248,14 @@ def swin_unet_2d(input_size, filter_num_begin, n_labels, depth, stack_num_down, 
     model = Model(inputs=[IN,], outputs=[OUT,], name='{}_model'.format(name))
     
     return model
+
+if __name__ == "__main__":
+    model = swin_unet_2d((1024, 1280, 3), filter_num_begin=64, n_labels=3, depth=4, stack_num_down=2, stack_num_up=2,
+                            patch_size=(4, 4), num_heads=[4, 8, 8, 8], window_size=[4, 2, 2, 2], num_mlp=512,
+                            output_activation='Softmax', shift_window=True, name='swin_unet')
+
+    model.summary(line_length=150)
+
+# model = models.swin_unet_2d((128, 128, 3), filter_num_begin=64, n_labels=3, depth=4, stack_num_down=2, stack_num_up=2,
+#                         patch_size=(2, 2), num_heads=[4, 8, 8, 8], window_size=[4, 2, 2, 2], num_mlp=512,
+#                         output_activation='Softmax', shift_window=True, name='swin_unet')
