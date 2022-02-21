@@ -101,7 +101,7 @@ if __name__ == '__main__':
                                   transform=lambda x: (x /85).astype(int))
 
     # finally we can call the utility for generating a dataset.json
-    generate_dataset_json(join(target_base, 'dataset.json').replace('\\', '/'), target_imagesTr.replace('\\', '/'), target_imagesTs.replace('\\', '/'), ('Red', 'Green', 'Blue'),
+    generate_dataset_json(join(target_base, 'dataset.json'), target_imagesTr, target_imagesTs, ('Red', 'Green', 'Blue'),
                           labels={0: 'background', 1: 'parts_1',2:'parts_2',3:'parts_3'}, dataset_name=task_name, license='hands off!')
 
     """
